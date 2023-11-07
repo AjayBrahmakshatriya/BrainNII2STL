@@ -12,11 +12,16 @@ import matplotlib.pyplot as plt
 infile = "my_brain.nii"
 outfile = "segment.stl"
 
-thresholds = [[70, 70, 120],
-             [160, 150, 230]]
+thresholds = [[[70, 70], [70, 70], [120, 120]],
+             [[160, 160], [150, 150], [230, 230]]]
+
+#thresholds = [[[A, B], [C, D], [E, F]],
+#             [[G, H], [I, J], [K, L]]]
 
 xbounds = [72, 174]
 ybounds = [70]
+zbounds = [90]
+
 
 data_sigma = 0.4
 mask_sigma = 5
@@ -38,6 +43,7 @@ mask = np.zeros(data.shape)
 
 ybounds_use = [0] + ybounds + [data.shape[0]]
 xbounds_use = [0] + xbounds + [data.shape[1]]
+zbounds_use = [0] + zbounds + [data.shape[2]]
 
 for yidx in range (1, len(ybounds_use)):
     ymin = ybounds_use[yidx-1]
@@ -45,8 +51,11 @@ for yidx in range (1, len(ybounds_use)):
     for xidx in range (1, len(xbounds_use)):
         xmin = xbounds_use[xidx-1]
         xmax = xbounds_use[xidx]
-        t = thresholds[yidx-1][xidx-1]
-        mask[ymin:ymax, xmin:xmax, :] = t
+        for zidx in range (1, len(zbounds_use)):
+            zmin = zbounds_use[zidx-1]
+            zmax = zbounds_use[zidx]
+            t = thresholds[yidx-1][xidx-1][zidx-1]
+            mask[ymin:ymax, xmin:xmax, zmin:zmax] = t
 
 #blur the mask
 mask = scipy.ndimage.gaussian_filter(mask, sigma = mask_sigma)
@@ -73,7 +82,6 @@ for i, f in enumerate(faces):
     obj.vectors[i] = verts[f]
 
 obj.save(outfile)
-
 
 # Optional step to apply blender smoothing
 import bpy
